@@ -1,36 +1,47 @@
-const int ButtonI = A1;
-const int ButtonII = A2;
-const int ButtonIII = A3;
+const int ButtonI = 3;
+const int ButtonII = 2;
+const int ButtonIII = A5;
 const int ButtonIV = A4;
 
-const int ButtonCor = 3;
-const int ButtonWro = 4;
-const int ButtonRes = 2;
-const int ButtonJdg = A5;
+const int ButtonCor = 12;
+const int ButtonWro = 11;
+const int ButtonMode = 7;
 
-const int LEDI = 6;
-const int LEDII = 7;
-const int LEDIII = 8;
-const int LEDIV = 9;
+const int LEDI = 5;
+const int LEDII = 4;
+const int LEDIII = A3;
+const int LEDIV = A2;
 
-const int LEDstats = 10;
-const int Buzzer = 11;
+const int LEDStats = 8;
 
-const int BPIw = 660;
-const int BPIIw = 520;
-const int BPtime = 80;
-const int BCIw = 1318;
-const int BCIIw = 1046;
-const int BCwhile = 3;
-const int BCtime = 70;
+const int Buzzer = A0;
+
+const int BPIw = 1525;
+const int BPIIw = 1200;
+const int BPtime = 100;
+const int BPtimeII = 400;
+const int BCIw = 1525;
+const int BCIIw = 1200;
+const int BCwhile = 5;
+const int BCtime = 50;
 const int BWIw = 220;
 
 int stats = 1;
-int JdgSec = 0;
-int Jdg = 0;
+int LMode = 0;
 int res = 0;
 int BCs = 0;
-int Rnd = 0;
+
+int pshPl = 0;
+int pshPl2 = 0;
+
+int pshed = 0;
+
+int ledSec = 0;
+int Pshed = 0;
+int BuzSec = 0;
+int CorSec = 0;
+
+int JdgBtn = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -40,249 +51,430 @@ void setup() {
   pinMode(ButtonIV, INPUT_PULLUP);
   pinMode(ButtonCor, INPUT_PULLUP);
   pinMode(ButtonWro, INPUT_PULLUP);
-  pinMode(ButtonRes, INPUT_PULLUP);
-  pinMode(ButtonJdg, INPUT_PULLUP);
+  pinMode(ButtonMode, INPUT_PULLUP);
 
   pinMode(LEDI, OUTPUT);
   pinMode(LEDII, OUTPUT);
   pinMode(LEDIII, OUTPUT);
   pinMode(LEDIV, OUTPUT);
-  pinMode(LEDstats, OUTPUT);
+  pinMode(LEDStats, OUTPUT);
   pinMode(Buzzer, OUTPUT);
 
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite (LED_BUILTIN, HIGH);
   Serial.println("+---+");
+  while (digitalRead(ButtonI) == 0 || digitalRead(ButtonII) == 0 || digitalRead(ButtonIII) == 0 || digitalRead(ButtonIV) == 0) {
+    delay(1);
+  }
+
+  digitalWrite(LEDStats, HIGH);
 }
 
 void loop() {
-  if (stats == 1 && digitalRead(ButtonI) == 0) {
-    stats = 2;
-    digitalWrite (LEDI, HIGH);
-    Serial.print(" 1");
-  }
-  if (stats == 1 && digitalRead(ButtonII) == 0) {
-    stats = 2;
-    digitalWrite (LEDII, HIGH);
-    Serial.print(" 2");
-  }
-  if (stats == 1 && digitalRead(ButtonIII) == 0) {
-    stats = 2;
-    digitalWrite (LEDIII, HIGH);
-    Serial.print(" 3");
-  }
-  if (stats == 1 && digitalRead(ButtonIV) == 0) {
-    stats = 2;
-    digitalWrite (LEDIV, HIGH);
-    Serial.print(" 4");
-  }
-
-  if (stats == 2) {
-    digitalWrite (LEDstats, HIGH);
-    stats = 3;
-    tone(Buzzer, BPIw);
-    delay(BPtime);
-    noTone(Buzzer);
-    tone(Buzzer, BPIIw);
-    delay(300);
-    noTone(Buzzer);
-  }
-
-  if (stats == 3) {
-    if ( digitalRead(ButtonJdg) == 0 ) {
-      digitalWrite (LED_BUILTIN, LOW);
-      while ( digitalRead(ButtonJdg) == 0 ) {
-        JdgSec++;
-        delay(1);
-        if (JdgSec == 150) {
-          digitalWrite (LED_BUILTIN, HIGH);
-        }
-        if (JdgSec == 500) {
-          digitalWrite (LED_BUILTIN, LOW);
-        }
-        if (JdgSec > 500) {
-          res = 1;
-          digitalWrite (LEDstats, LOW);
-          delay(20);
-          digitalWrite (LEDstats, HIGH);
-          delay(20);
-          digitalWrite (LEDstats, LOW);
-        }
+  while (1) {
+    if (digitalRead(ButtonI) == 0) {
+      if (stats == 1) {
+        pshPl = 1;
+        pshed = 1;
+        stats = 2;
+        digitalWrite (LEDI, HIGH);
+        Serial.print(" 1");
       }
-      digitalWrite (LED_BUILTIN, HIGH);
-      if (JdgSec > 10 && JdgSec < 150) {
-        Jdg = 1;
+    }
+    if (digitalRead(ButtonII) == 0) {
+      if (stats == 1) {
+        pshPl = 2;
+        pshed = 1;
+        stats = 2;
+        digitalWrite (LEDII, HIGH);
+        Serial.print(" 2");
       }
-      if (JdgSec > 150 && JdgSec < 500) {
-        Jdg = 2;
-        BCs = BCwhile;
+    }
+    if (digitalRead(ButtonIII) == 0) {
+      if (stats == 1) {
+        pshPl = 3;
+        pshed = 1;
+        stats = 2;
+        digitalWrite (LEDIII, HIGH);
+        Serial.print(" 3");
       }
-      JdgSec = 0;
+    }
+    if (digitalRead(ButtonIV) == 0) {
+      if (stats == 1) {
+        pshPl = 4;
+        pshed = 1;
+        stats = 2;
+        digitalWrite (LEDIV, HIGH);
+        Serial.print(" 4");
+      }
     }
 
-    if ( digitalRead(ButtonCor) == 0 || Jdg == 2) {
-      Serial.println(" O ");
-      stats = 4;
-      BCs = BCwhile;
-      while ( digitalRead(ButtonCor) == 0 || BCs > 0) {
-        BCs = BCs - 1;
-        noTone(Buzzer);
-        digitalWrite (LEDstats, HIGH);
-        tone(Buzzer, BCIw);
-        delay(BCtime);
-        noTone(Buzzer);
-        digitalWrite (LEDstats, LOW);
+
+
+
+    if (stats == 1) {
+      if ( digitalRead(ButtonCor) == 0) {
+        BCs = 1;
+        while ( digitalRead(ButtonCor) == 0 || BCs > 0) {
+          BCs = BCs - 1;
+          noTone(Buzzer);
+          tone(Buzzer, BCIw);
+          delay(BCtime);
+          noTone(Buzzer);
+          tone(Buzzer, BCIIw);
+          delay(BCtime);
+        }
         tone(Buzzer, BCIIw);
-        delay(BCtime);
+        delay(200);
+        noTone(Buzzer);
+        BCs = 0;
       }
-      tone(Buzzer, BCIIw);
-      digitalWrite (LEDstats, LOW);
-      delay(200);
-      noTone(Buzzer);
-      digitalWrite (LEDstats, LOW);
-    }
-    if ( digitalRead(ButtonWro) == 0 || Jdg == 1) {
-      Serial.println(" X ");
-      digitalWrite (LEDstats, LOW);
-      stats = 4;
-      tone(Buzzer, BWIw);
-      delay(1000);
-      noTone(Buzzer);
-    }
-    Jdg = 0;
-  }
 
-  if (stats == 4) {
-    digitalWrite (LEDI, LOW);
-    digitalWrite (LEDII, LOW);
-    digitalWrite (LEDIII, LOW);
-    digitalWrite (LEDIV, LOW);
-    digitalWrite (LEDstats, LOW);
-    stats = 1;
-    Jdg = 0;
-  }
-
-  if (stats != 3) {
-    if ( digitalRead(ButtonJdg) == 0 ) {
-      digitalWrite (LED_BUILTIN, LOW);
-      while ( digitalRead(ButtonJdg) == 0 ) {
-        JdgSec++;
-        delay(1);
-        if (JdgSec == 150) {
-          digitalWrite (LED_BUILTIN, HIGH);
-        }
-        if (JdgSec == 500) {
-          digitalWrite (LED_BUILTIN, LOW);
-        }
-        if (JdgSec > 500 && JdgSec < 520) {
-          res = 1;
-          digitalWrite (LEDstats, LOW);
-          delay(20);
-          digitalWrite (LEDstats, HIGH);
-          delay(20);
-          digitalWrite (LEDstats, LOW);
-        }
-        if (JdgSec > 520) {
-          digitalWrite (LEDI, HIGH);
-          delay(100);
-          digitalWrite (LEDI, LOW);
-          digitalWrite (LEDII, HIGH);
-          delay(100);
-          digitalWrite (LEDII, LOW);
-          digitalWrite (LEDIII, HIGH);
-          delay(100);
-          digitalWrite (LEDIII, LOW);
-          digitalWrite (LEDIV, HIGH);
-          delay(100);
-          digitalWrite (LEDIV, LOW);
-        }
-      }
-      if (JdgSec > 10 && JdgSec < 150) {
-        Jdg = 1;
+      if ( digitalRead(ButtonWro) == 0) {
+        tone(Buzzer, BWIw);
         BCs = 5;
+        while ( digitalRead(ButtonWro) == 0 || BCs > 0) {
+          BCs = BCs - 1;
+          delay(10);
+        }
+        noTone(Buzzer);
+        BCs = 0;
       }
-      if (JdgSec > 150 && JdgSec < 500) {
-        Jdg = 2;
-        BCs = BCwhile;
+
+      if (digitalRead(ButtonMode) == 0) {
+        if (LMode == 0) {
+          LMode = 1;
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(100);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+
+        } else if (LMode == 1) {
+          LMode = 3;
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(50);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(50);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+
+        } else if (LMode == 3) {
+          LMode = 0;
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(200);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+        }
+        while (digitalRead(ButtonMode) == 0) {
+        }
+
       }
-      if (JdgSec > 520) {
+
+    }
+
+
+
+
+
+    if (stats != 1) {
+
+      if (stats == 2) {
+        digitalWrite(LEDStats, LOW);
+        BuzSec++;
+        if (BuzSec == 1) {
+          tone(Buzzer, BPIw);
+        }
+        if (BuzSec == BPtime) {
+          noTone(Buzzer);
+          tone(Buzzer, BPIIw);
+        }
+        if (BuzSec == BPtime + BPtimeII) {
+          noTone(Buzzer);
+          stats = 3;
+          BuzSec = 0;
+        }
+
+        if ( digitalRead(ButtonWro) == 0) {
+          JdgBtn = 1;
+        }
+
+        if ( digitalRead(ButtonCor) == 0) {
+          JdgBtn = 2;
+        }
+
+      }
+
+      if ( stats == 2 || stats == 3 ) {
+        delay(1);
+        ledSec++;
+        if (ledSec == 100) {
+          if (pshPl == 1) {
+            digitalWrite (LEDI, HIGH);
+          }
+          if (pshPl == 2) {
+            digitalWrite (LEDII, HIGH);
+          }
+          if (pshPl == 3) {
+            digitalWrite (LEDIII, HIGH);
+          }
+          if (pshPl == 4) {
+            digitalWrite (LEDIV, HIGH);
+          }
+        }
+        if (ledSec == 400) {
+          if (pshPl == 1) {
+            digitalWrite (LEDI, LOW);
+          }
+          if (pshPl == 2) {
+            digitalWrite (LEDII, LOW);
+          }
+          if (pshPl == 3) {
+            digitalWrite (LEDIII, LOW);
+          }
+          if (pshPl == 4) {
+            digitalWrite (LEDIV, LOW);
+          }
+          ledSec = 0;
+        }
+
+        if (pshed == 1  && LMode != 0) {
+
+          if (digitalRead(ButtonI) == 0 && pshPl != 1) {
+            digitalWrite (LEDI, HIGH);
+            pshPl2 = 1;
+            pshed = 2;
+          }
+          if (digitalRead(ButtonII) == 0 && pshPl != 2) {
+            digitalWrite (LEDII, HIGH);
+            pshed = 2;
+            pshPl2 = 2;
+          }
+          if (digitalRead(ButtonIII) == 0 && pshPl != 3) {
+            digitalWrite (LEDIII, HIGH);
+            pshed = 2;
+            pshPl2 = 3;
+          }
+          if (digitalRead(ButtonIV) == 0 && pshPl != 4) {
+            digitalWrite (LEDIV, HIGH);
+            pshed = 2;
+            pshPl2 = 4;
+          }
+        }
+        if (pshed == 2 && LMode == 3) {
+
+          if (digitalRead(ButtonI) == 0 && pshPl != 1) {
+            digitalWrite (LEDI, HIGH);
+          }
+          if (digitalRead(ButtonII) == 0 && pshPl != 2) {
+            digitalWrite (LEDII, HIGH);
+          }
+          if (digitalRead(ButtonIII) == 0 && pshPl != 3) {
+            digitalWrite (LEDIII, HIGH);
+          }
+          if (digitalRead(ButtonIV) == 0 && pshPl != 4) {
+            digitalWrite (LEDIV, HIGH);
+          }
+        }
+      }
+
+
+      if (stats == 3) {
+
+        if (LMode == 0) {
+
+          if ( digitalRead(ButtonWro) == 0 || JdgBtn == 1 ) {
+            JdgBtn = 0;
+            digitalWrite (LEDI, LOW);
+            digitalWrite (LEDII, LOW);
+            digitalWrite (LEDIII, LOW);
+            digitalWrite (LEDIV, LOW);
+
+            Serial.println(" X ");
+
+            stats = 4;
+            tone(Buzzer, BWIw);
+            delay(100);
+            noTone(Buzzer);
+            delay(75);
+            tone(Buzzer, BWIw);
+            delay(600);
+            noTone(Buzzer);
+          }
+        } else if (LMode != 0 ) {
+
+          if ( digitalRead(ButtonWro) == 0 || JdgBtn == 1 ) {
+            JdgBtn = 0;
+            digitalWrite (LEDI, LOW);
+            digitalWrite (LEDII, LOW);
+            digitalWrite (LEDIII, LOW);
+            digitalWrite (LEDIV, LOW);
+
+            Serial.println(" X ");
+
+            tone(Buzzer, BWIw);
+            delay(100);
+            noTone(Buzzer);
+            delay(75);
+            tone(Buzzer, BWIw);
+            delay(600);
+            noTone(Buzzer);
+
+            if (pshPl2 != 0) {
+              pshPl = pshPl2;
+              pshPl2 = 0;
+              if (pshPl == 1) {
+                digitalWrite (LEDI, HIGH);
+                Serial.print(" 1");
+              }
+              if (pshPl == 2) {
+                digitalWrite (LEDII, HIGH);
+                Serial.print(" 2");
+              }
+              if (pshPl == 3) {
+                digitalWrite (LEDIII, HIGH);
+                Serial.print(" 3");
+              }
+              if (pshPl == 4) {
+                digitalWrite (LEDIV, HIGH);
+                Serial.print(" 4");
+              }
+
+              pshed = 1;
+              stats = 2;
+            }else if(pshPl2 == 0){
+              stats = 4;
+            }
+          }
+        }
+
+        if ( digitalRead(ButtonCor) == 0  || JdgBtn == 2 ) {
+          JdgBtn = 0;
+          digitalWrite (LEDI, LOW);
+          digitalWrite (LEDII, LOW);
+          digitalWrite (LEDIII, LOW);
+          digitalWrite (LEDIV, LOW);
+
+          if (pshPl == 1) {
+            digitalWrite (LEDI, HIGH);
+          }
+          if (pshPl == 2) {
+            digitalWrite (LEDII, HIGH);
+          }
+          if (pshPl == 3) {
+            digitalWrite (LEDIII, HIGH);
+          }
+          if (pshPl == 4) {
+            digitalWrite (LEDIV, HIGH);
+          }
+
+          Serial.println(" O ");
+          stats = 4;
+          BCs = BCwhile;
+          while ( digitalRead(ButtonCor) == 0 || BCs > 0) {
+            BCs = BCs - 1;
+            noTone(Buzzer);
+
+            tone(Buzzer, BCIw);
+            delay(BCtime);
+            noTone(Buzzer);
+
+            tone(Buzzer, BCIIw);
+            delay(BCtime);
+            CorSec++;
+          }
+          tone(Buzzer, BCIIw);
+          delay(200);
+          noTone(Buzzer);
+
+          while ( CorSec >= 10 && digitalRead(ButtonWro) == 1) {
+            delay(1);
+            while ( digitalRead(ButtonCor) == 0 || BCs > 0) {
+              BCs = BCs - 1;
+              noTone(Buzzer);
+
+              tone(Buzzer, BCIw);
+              delay(BCtime);
+              noTone(Buzzer);
+
+              tone(Buzzer, BCIIw);
+              delay(BCtime);
+              CorSec++;
+            }
+            delay(200);
+            noTone(Buzzer);
+          }
+          while ( CorSec >= 10 && digitalRead(ButtonWro) == 0) {
+            delay(1);
+          }
+        }
+      }
+
+      if (stats == 4) {
+
+        digitalWrite (LEDI, LOW);
+        digitalWrite (LEDII, LOW);
+        digitalWrite (LEDIII, LOW);
+        digitalWrite (LEDIV, LOW);
+
+        stats = 1;
+        pshPl = 0;
+        pshPl2 = 0;
+        ledSec = 0;
+        Pshed = 0;
+        CorSec = 0;
+        JdgBtn = 0;
+        pshed = 0;
+        BuzSec = 0;
+
+        digitalWrite(LEDStats, HIGH);
+
+        while (digitalRead(ButtonI) == 0 || digitalRead(ButtonII) == 0 || digitalRead(ButtonIII) == 0 || digitalRead(ButtonIV) == 0) {
+          delay(1);
+        }
+        digitalWrite(LEDStats, HIGH);
+      }
+
+      if (digitalRead (ButtonMode) == 0 || res == 1 ) {
+        Serial.print(" -");
+        Serial.print("\n");
+        digitalWrite (LEDI, LOW);
+        digitalWrite (LEDII, LOW);
+        digitalWrite (LEDIII, LOW);
+        digitalWrite (LEDIV, LOW);
+        stats = 1;
+        pshPl = 0;
+        pshPl2 = 0;
+        ledSec = 0;
+        Pshed = 0;
+        CorSec = 0;
+        JdgBtn = 0;
+        pshed = 0;
+        BuzSec = 0;
         res = 0;
-        Rnd = random(1, 5);
-        if (Rnd == 1) {
-          stats = 2;
-          digitalWrite (LEDI, HIGH);
-          Serial.print("R1");
-        }
-        if (Rnd == 2) {
-          stats = 2;
-          digitalWrite (LEDII, HIGH);
-          Serial.print("R2");
-        }
-        if (Rnd == 3) {
-          stats = 2;
-          digitalWrite (LEDIII, HIGH);
-          Serial.print("R3");
-        }
-        if (Rnd == 4) {
-          stats = 2;
-          digitalWrite (LEDIV, HIGH);
-          Serial.print("R4");
-        }
-      }
-      JdgSec = 0;
-      digitalWrite (LED_BUILTIN, HIGH);
-    }
-    if ( digitalRead(ButtonCor) == 0 || Jdg == 2) {
-      digitalWrite (LEDstats, HIGH);
-      while ( digitalRead(ButtonCor) == 0 || BCs > 0) {
-        BCs = BCs - 1;
         noTone(Buzzer);
-        digitalWrite (LEDstats, HIGH);
-        tone(Buzzer, BCIw);
-        delay(BCtime);
-        noTone(Buzzer);
-        digitalWrite (LEDstats, LOW);
-        tone(Buzzer, BCIIw);
-        delay(BCtime);
+        while ( digitalRead (ButtonMode) == 0 ) {
+          delay (1);
+        }
+        digitalWrite(LEDStats, HIGH);
       }
-      tone(Buzzer, BCIIw);
-      digitalWrite (LEDstats, LOW);
-      delay(200);
-      noTone(Buzzer);
-      Jdg = 0;
-      BCs = 0;
-    }
-
-    if ( digitalRead(ButtonWro) == 0 || Jdg == 1) {
-      tone(Buzzer, BWIw);
-      while ( digitalRead(ButtonWro) == 0 || BCs > 0) {
-        BCs = BCs - 1;
-        delay(100);
-      }
-      noTone(Buzzer);
-      Jdg = 0;
-      BCs = 0;
     }
   }
-
-
-  if ( digitalRead(ButtonRes) == 0 || res == 1) {
-    Serial.print(" -");
-    Serial.print("\n");
-    digitalWrite (LEDI, LOW);
-    digitalWrite (LEDII, LOW);
-    digitalWrite (LEDIII, LOW);
-    digitalWrite (LEDIV, LOW);
-    digitalWrite (LEDstats, LOW);
-    stats = 1;
-    Jdg = 0;
-    JdgSec = 0;
-    res = 0;
-    while ( digitalRead(ButtonRes) == 0 ) {
-      delay (1);
-    }
-  }
-
-
-  delay(1);
 }
