@@ -2,49 +2,74 @@ const int ButtonI = 3;
 const int ButtonII = 2;
 const int ButtonIII = A5;
 const int ButtonIV = A4;
-
 const int ButtonCor = 12;
 const int ButtonWro = 11;
 const int ButtonMode = 7;
+//ボタンポート番号
 
 const int LEDI = 5;
 const int LEDII = 4;
 const int LEDIII = A3;
 const int LEDIV = A2;
-
 const int LEDStats = 8;
+//LEDポート番号
 
 const int Buzzer = A0;
+//ブザーポート番号
 
 const int BPIw = 1525;
 const int BPIIw = 1200;
+//ボタン押し音周波数
 const int BPtime = 100;
 const int BPtimeII = 400;
+//ボタン押し音長さ
 const int BCIw = 1525;
 const int BCIIw = 1200;
+//正解音周波数
 const int BCwhile = 5;
+//正解音繰り返し数
 const int BCtime = 50;
+//正解音長さ
 const int BWIw = 220;
+//誤答音周波数
+
 
 int stats = 1;
+//stats = 1(ボタン1着待ち)
+//stats = 2(ボタン押し音再生)
+//stats = 3(正誤判定待ち)
+//stats = 4(終了処理)
+
 int LMode = 0;
+//LMode = 0(1着点滅)
+//LMode = 1(2着点灯)
+//LMode = 3(全点灯2着記録)
+//LMode = 4(エンドレスチャンス2着点灯)
+
 int res = 0;
+//res = 1(全関数リセット)
+
 int BCs = 0;
+//反復処理用
 
 int pshPl = 0;
 int pshPl2 = 0;
+int pshPl3 = 0;
+int pshPl4 = 0;
+//着順毎記録
 
 int pshed = 0;
+//記録着数
 
 int ledSec = 0;
-int Pshed = 0;
 int BuzSec = 0;
 int CorSec = 0;
+//各種ループ数処理
 
 int JdgBtn = 0;
+//正誤判定保持用
 
 void setup() {
-  Serial.begin(9600);
   pinMode(ButtonI, INPUT_PULLUP);
   pinMode(ButtonII, INPUT_PULLUP);
   pinMode(ButtonIII, INPUT_PULLUP);
@@ -52,19 +77,20 @@ void setup() {
   pinMode(ButtonCor, INPUT_PULLUP);
   pinMode(ButtonWro, INPUT_PULLUP);
   pinMode(ButtonMode, INPUT_PULLUP);
-
   pinMode(LEDI, OUTPUT);
   pinMode(LEDII, OUTPUT);
   pinMode(LEDIII, OUTPUT);
   pinMode(LEDIV, OUTPUT);
   pinMode(LEDStats, OUTPUT);
   pinMode(Buzzer, OUTPUT);
-
   pinMode(LED_BUILTIN, OUTPUT);
+
+  Serial.begin(9600);
   Serial.println("+---+");
+
   while (digitalRead(ButtonI) == 0 || digitalRead(ButtonII) == 0 || digitalRead(ButtonIII) == 0 || digitalRead(ButtonIV) == 0) {
     delay(1);
-  }
+  } //長押し対策
 
   digitalWrite(LEDStats, HIGH);
 }
@@ -72,6 +98,7 @@ void setup() {
 void loop() {
   while (1) {
     if (digitalRead(ButtonI) == 0) {
+      //stats = 1(ボタン1着待ち)
       if (stats == 1) {
         pshPl = 1;
         pshed = 1;
@@ -142,6 +169,7 @@ void loop() {
 
       if (digitalRead(ButtonMode) == 0) {
         if (LMode == 0) {
+          //LMode = 1(2着点灯)への移行表示
           LMode = 1;
           tone(Buzzer, 660);
           digitalWrite(LEDStats, LOW);
@@ -156,6 +184,7 @@ void loop() {
           noTone(Buzzer);
 
         } else if (LMode == 1) {
+          //LMode = 3(全点灯2着記録)への移行表示
           LMode = 3;
           tone(Buzzer, 660);
           digitalWrite(LEDStats, LOW);
@@ -176,6 +205,33 @@ void loop() {
           noTone(Buzzer);
 
         } else if (LMode == 3) {
+          //LMode = 4(エンドレスチャンス2着点灯)への移行表示
+          LMode = 4;
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(50);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(50);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+          delay(50);
+          tone(Buzzer, 660);
+          digitalWrite(LEDStats, LOW);
+          delay(100);
+          digitalWrite(LEDStats, HIGH);
+          noTone(Buzzer);
+        } else if (LMode == 4) {
+          //LMode = 0(1着点滅)への移行表示
           LMode = 0;
           tone(Buzzer, 660);
           digitalWrite(LEDStats, LOW);
@@ -185,6 +241,7 @@ void loop() {
         }
         while (digitalRead(ButtonMode) == 0) {
         }
+        //長押し対策
 
       }
 
@@ -202,11 +259,11 @@ void loop() {
         if (BuzSec == 1) {
           tone(Buzzer, BPIw);
         }
-        if (BuzSec == BPtime) {
+        if (BuzSec == BPtime*10) {
           noTone(Buzzer);
           tone(Buzzer, BPIIw);
         }
-        if (BuzSec == BPtime + BPtimeII) {
+        if (BuzSec == BPtime*10 + BPtimeII*10) {
           noTone(Buzzer);
           stats = 3;
           BuzSec = 0;
@@ -223,9 +280,9 @@ void loop() {
       }
 
       if ( stats == 2 || stats == 3 ) {
-        delay(1);
+        delay(0.1);
         ledSec++;
-        if (ledSec == 100) {
+        if (ledSec == 2000) {
           if (pshPl == 1) {
             digitalWrite (LEDI, HIGH);
           }
@@ -239,7 +296,7 @@ void loop() {
             digitalWrite (LEDIV, HIGH);
           }
         }
-        if (ledSec == 400) {
+        if (ledSec == 8000) {
           if (pshPl == 1) {
             digitalWrite (LEDI, LOW);
           }
@@ -291,6 +348,42 @@ void loop() {
           }
           if (digitalRead(ButtonIV) == 0 && pshPl != 4) {
             digitalWrite (LEDIV, HIGH);
+          }
+        }
+        if (pshed == 2 && LMode == 4) {
+          if (digitalRead(ButtonI) == 0 && pshPl != 1 && pshPl2 != 1) {
+            pshPl3 = 1;
+            pshed = 3;
+          }
+          if (digitalRead(ButtonII) == 0 && pshPl != 2 && pshPl2 != 2) {
+            pshPl3 = 2;
+            pshed = 3;
+          }
+          if (digitalRead(ButtonIII) == 0 && pshPl != 3 && pshPl2 != 3) {
+            pshPl3 = 3;
+            pshed = 3;
+          }
+          if (digitalRead(ButtonIV) == 0 && pshPl != 4 && pshPl2 != 4) {
+            pshPl3 = 4;
+            pshed = 3;
+          }
+        }
+        if (pshed == 3 && LMode == 4) {
+          if (digitalRead(ButtonI) == 0 && pshPl != 1 && pshPl2 != 1 && pshPl3 != 1) {
+            pshPl4 = 1;
+            pshed = 4;
+          }
+          if (digitalRead(ButtonII) == 0 && pshPl != 2 && pshPl2 != 2 && pshPl3 != 2) {
+            pshPl4 = 2;
+            pshed = 4;
+          }
+          if (digitalRead(ButtonIII) == 0 && pshPl != 3 && pshPl2 != 3 && pshPl3 != 3) {
+            pshPl4 = 3;
+            pshed = 4;
+          }
+          if (digitalRead(ButtonIV) == 0 && pshPl != 4 && pshPl2 != 4 && pshPl3 != 4) {
+            pshPl4 = 4;
+            pshed = 4;
           }
         }
       }
@@ -356,10 +449,31 @@ void loop() {
                 digitalWrite (LEDIV, HIGH);
                 Serial.print(" 4");
               }
-
               pshed = 1;
+              if (pshPl3 != 0) {
+                pshPl2 = pshPl3;
+                pshPl3 = 0;
+                if (pshPl2 == 1) {
+                  digitalWrite (LEDI, HIGH);
+                }
+                if (pshPl2 == 2) {
+                  digitalWrite (LEDII, HIGH);
+                }
+                if (pshPl2 == 3) {
+                  digitalWrite (LEDIII, HIGH);
+                }
+                if (pshPl2 == 4) {
+                  digitalWrite (LEDIV, HIGH);
+                }
+                pshed = 2;
+                if (pshPl4 != 0) {
+                  pshPl3 = pshPl4;
+                  pshPl4 = 0;
+                  pshed = 3;
+                }
+              }
               stats = 2;
-            }else if(pshPl2 == 0){
+            } else if (pshPl2 == 0) {
               stats = 4;
             }
           }
@@ -437,8 +551,10 @@ void loop() {
         stats = 1;
         pshPl = 0;
         pshPl2 = 0;
+        pshPl3 = 0;
+        pshPl4 = 0;
         ledSec = 0;
-        Pshed = 0;
+        pshed = 0;
         CorSec = 0;
         JdgBtn = 0;
         pshed = 0;
@@ -463,7 +579,7 @@ void loop() {
         pshPl = 0;
         pshPl2 = 0;
         ledSec = 0;
-        Pshed = 0;
+        pshed = 0;
         CorSec = 0;
         JdgBtn = 0;
         pshed = 0;
